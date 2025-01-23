@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 from typing import Optional, List
 
@@ -25,13 +26,23 @@ class ModelArguments:
             "which case you must install this manually by running `pip install flash-attn --no-build-isolation`."
         },
     )
-    use_bnb: Optional[bool] = field(default=True, metadata={"help": "Whether to use BitsAndBytes."})
-    use_lora: Optional[bool] = field(default=False, metadata={"help": "Whether to use LoRA."})
+    use_bnb: Optional[bool] = field(default=False, metadata={"help": "Whether to use BitsAndBytes."})
+    use_lora: Optional[bool] = field(default=True, metadata={"help": "Whether to use LoRA."})
     lora_alpha: Optional[float] = field(default=16, metadata={"help": "the lora alpha parameter."})
     lora_dropout: Optional[float] = field(default=0.05, metadata={"help": "the lora dropout parameter."})
     lora_rank: Optional[int] = field(default=32, metadata={"help": "the lora rank parameter."})
+    target_modules: List[str] = field(default_factory=default_list)
     low_cpu_mem_usage: Optional[bool] = field(default=False, metadata={"help": "Whether to use low cpu memory usage."})
     cache_dir: Optional[str] = field(default="./LMs")
     token: Optional[str] = field(default="")
     peft_model_path: Optional[str] = field(default="")
     from_peft: Optional[str] = field(default=None)
+
+
+@dataclass
+class DataArguments:
+    train_data: str = field(metadata={"help": "Path to train"})
+
+    def __post_init__(self):
+        if not os.path.exists(self.train_data):
+            raise FileNotFoundError(f"Dataset file not found: {self.train_data}")
