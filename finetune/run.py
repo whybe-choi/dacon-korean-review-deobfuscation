@@ -1,9 +1,11 @@
 import logging
+import os
 
-from transformers import AutoTokenizer
-from transformers import HfArgumentParser, set_seed
+import torch
+from transformers import AutoTokenizer, HfArgumentParser, set_seed
 from trl import SFTTrainer, SFTConfig
 from datasets import load_dataset
+from peft import AutoPeftModelForCausalLM
 
 from arguments import DataArguments, ModelArguments
 from load_model import get_model
@@ -46,7 +48,8 @@ def main():
     tokenizer.padding_side = "right"
 
     if training_args.gradient_checkpointing:
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        model.config.use_cache = False
+        model.gradient_checkpointing_enable()
 
     dataset = load_dataset("csv", data_files=data_args.train_data, split="train")
 
@@ -77,10 +80,22 @@ def main():
     )
 
     trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
-    trainer.save_model()
+    trainer.save_model(training_args.output_dir)
+
+    output_dir = os.path.join(training_args.output_dir, "final_checkpoint")
+    trainer.model.save_pretrained(output_dir)
 
     if trainer.is_world_process_zero():
         tokenizer.save_pretrained(training_args.output_dir)
+
+    del model
+    torch.cuda.empty_cache()
+
+    model = AutoPeftModelForCausalLM.from_pretrained(output_dir, torch_dtype=model_args.torch_dtype)
+    model = model.merge_and_unload()
+
+    output_merged_dir = os.path.join(training_args.output_dir, "final_merged_checkpoint")
+    model.save_pretrained(output_merged_dir, safe_serialize=True)
 
 
 if __name__ == "__main__":
