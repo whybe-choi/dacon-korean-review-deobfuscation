@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 
 import torch
 from transformers import AutoTokenizer, HfArgumentParser, set_seed
@@ -51,30 +52,31 @@ def main():
         model.config.use_cache = False
         model.gradient_checkpointing_enable()
 
-    dataset = load_dataset("csv", data_files=data_args.train_data, split="train")
+    train_dataset = load_dataset("csv", data_files=data_args.train_data, split="train")
 
     def prompt_formatting_func(examples):
+        texts = []
+
+        all_indices = list(range(len(train_dataset)))
         inputs = examples["input"]
         outputs = examples["output"]
-        texts = []
-        for inputs, outputs in zip(inputs, outputs):
-            prompt_formatted_str = create_prompt(inputs, outputs) + tokenizer.eos_token
-            texts.append(prompt_formatted_str)
+
+        for idx, (input, output) in enumerate(zip(inputs, outputs)):
+            possible_indices = [i for i in all_indices if i != idx]
+            selected_indices = random.sample(possible_indices, 5)
+            shots = [train_dataset[i] for i in selected_indices]
+
+            prompt = create_prompt(shots, input, output) + tokenizer.eos_token
+            texts.append(prompt)
+
         return texts
 
-    split_dataset = dataset.train_test_split(test_size=0.01, seed=training_args.seed)
-
-    train_dataset = split_dataset["train"]
-    eval_dataset = split_dataset["test"]
-
     logging.info(f"Train dataset: {len(train_dataset)}")
-    logging.info(f"Eval dataset: {len(eval_dataset)}")
 
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
         train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
         args=training_args,
         formatting_func=prompt_formatting_func,
     )
@@ -85,9 +87,6 @@ def main():
     output_dir = os.path.join(training_args.output_dir, "final_checkpoint")
     trainer.model.save_pretrained(output_dir)
 
-    if trainer.is_world_process_zero():
-        tokenizer.save_pretrained(training_args.output_dir)
-
     del model
     torch.cuda.empty_cache()
 
@@ -96,6 +95,9 @@ def main():
 
     output_merged_dir = os.path.join(training_args.output_dir, "final_merged_checkpoint")
     model.save_pretrained(output_merged_dir, safe_serialize=True)
+
+    if trainer.is_world_process_zero():
+        tokenizer.save_pretrained(output_merged_dir)
 
 
 if __name__ == "__main__":
