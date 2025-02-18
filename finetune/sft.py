@@ -10,7 +10,7 @@ from peft import AutoPeftModelForCausalLM
 
 from arguments import DataArguments, ModelArguments
 from load_model import get_model
-from utils import create_prompt
+from utils import create_sft_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def main():
             selected_indices = random.sample(possible_indices, 5)
             shots = [train_dataset[i] for i in selected_indices]
 
-            prompt = create_prompt(shots, input, output) + tokenizer.eos_token
+            prompt = create_sft_prompt(shots, input, output) + tokenizer.eos_token
             texts.append(prompt)
 
         return texts
