@@ -5,9 +5,9 @@ def create_sft_prompt(examples, current_input, current_output):
     )
 
     for example in examples:
-        prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {example['input']}<end_of_turn>\n<start_of_turn>model\n{example['output']}<end_of_turn>\n"
+        prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {example['input'].strip()}<end_of_turn>\n<start_of_turn>model\n{example['output'].strip()}<end_of_turn>\n"
 
-    prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {current_input}<end_of_turn>\n<start_of_turn>model\n{current_output}<end_of_turn>"
+    prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {current_input.strip()}<end_of_turn>\n<start_of_turn>model\n{current_output.strip()}<end_of_turn>\n"
     return prompt
 
 
@@ -18,7 +18,7 @@ def create_dpo_prompt(examples, current_input):
     )
 
     for example in examples:
-        prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {example['input']}<end_of_turn>\n<start_of_turn>model\n{example['output']}<end_of_turn>\n"
+        prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {example['input'].strip()}<end_of_turn>\n<start_of_turn>model\n{example['output'].strip()}<end_of_turn>\n"
 
-    prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {current_input}<end_of_turn>\n<start_of_turn>model\n"
+    prompt += f"<start_of_turn>user\nTransform the following obfuscated review: {current_input.strip()}<end_of_turn>\n<start_of_turn>model\n"
     return prompt
