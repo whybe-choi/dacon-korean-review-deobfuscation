@@ -53,6 +53,7 @@ def main():
         model.gradient_checkpointing_enable()
 
     train_dataset = load_dataset("csv", data_files=data_args.train_data, split="train")
+    train_dataset = train_dataset.shuffle(seed=training_args.seed)
 
     def prompt_formatting_func(examples):
         texts = []
@@ -63,8 +64,9 @@ def main():
 
         for idx, (input, output) in enumerate(zip(inputs, outputs)):
             possible_indices = [i for i in all_indices if i != idx]
-            selected_indices = random.sample(possible_indices, 5)
-            shots = [train_dataset[i] for i in selected_indices]
+            k = random.randint(1, 5)
+            selected_indices = random.sample(possible_indices, k)
+            shots = [train_dataset[i] for i in selected_indices if train_dataset[i]["input"] != input]
 
             prompt = create_sft_prompt(shots, input, output) + tokenizer.eos_token
             texts.append(prompt)
