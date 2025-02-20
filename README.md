@@ -14,6 +14,15 @@ pip install -r requirements.txt
 pip install flash-attn --no-build-isolation
 ```
 
+## Data Augmentation
+```bash
+python augment.py \
+    --input_file ./data/train.csv \
+    --output_file ./data/train_augmented.csv \
+    --k 5 \
+    --error_prob 0.4
+```
+
 ## Supervised Fine-tuning (SFT)
 ```bash
 CURRENT_TIME=$(date "+%Y-%m-%d_%H-%M-%S")
@@ -26,10 +35,10 @@ sft.py \
 --model_name_or_path rtzr/ko-gemma-2-9b-it \
 --torch_dtype float16 \
 --max_seq_length 1024 \
---train_data ../data/train.csv \
+--train_data ../data/train_augmented.csv \
 --learning_rate 3e-4 \
 --num_train_epochs 5 \
---per_device_train_batch_size 1 \
+--per_device_train_batch_size 8 \
 --gradient_accumulation_steps 8 \
 --logging_steps 10 \
 --save_strategy epoch \
@@ -40,9 +49,9 @@ sft.py \
 --deepspeed ../stage1.json \
 --fp16 \
 --cache_dir ./LMs \
---token .. \
+--token \
 --report_to wandb \
---run_name rtzr-gemma-${CURRENT_TIME} \
+--run_name rtzr-gemma-${CURRENT_TIME}
 ```
 
 ## Inference
@@ -52,11 +61,7 @@ CURRENT_TIME=$(date "+%Y-%m-%d_%H-%M-%S")
 python inference.py \
     --model_name_or_path whybe-choi/ko-gemma-2-9b-it-5shot-dacon \
     --train_path ./data/train.csv \
-    --test_path ./data/test_processed_v6.csv \
+    --test_path ./data/test.csv \
     --submission_path ./submissions/submission_${CURRENT_TIME}.csv \
-    --n_shot 5 \
-    --max_new_tokens 2048 \
-    --do_sample True \
-    --top_p 0.65 \
-    --temperature 0.5 \
+    --do_sample False
 ```
