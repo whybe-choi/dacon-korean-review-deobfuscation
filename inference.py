@@ -49,6 +49,7 @@ def main():
     parser.add_argument("--top_p", type=float, default=None)
     parser.add_argument("--top_k", type=int, default=None)
     parser.add_argument("--temperature", type=float, default=None)
+    parser.add_argument("--num_beams", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -80,6 +81,7 @@ def main():
             top_p=args.top_p,
             top_k=args.top_k,
             temperature=args.temperature,
+            num_beams=args.num_beams,
         )
         generated_text = result[0]["generated_text"][len(example["prompt"]) :]
         generated_text = generated_text[: len(example["input"])]
