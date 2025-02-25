@@ -8,3 +8,5 @@ bitsandbytes==0.42.0
 wandb==0.17.4
 deepspeed==0.15.4
 hgtk==0.2.1
+kss==6.0.4
+kiwipiepy==0.20.3
