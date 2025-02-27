@@ -11,3 +11,4 @@ hgtk==0.2.1
 kss==6.0.4
 kiwipiepy==0.20.3
 python-mecab-ko==1.3.7
+vllm==0.5.4
