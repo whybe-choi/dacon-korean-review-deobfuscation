@@ -1,6 +1,5 @@
 import argparse
 import logging
-from tqdm import tqdm
 import random
 
 import torch
@@ -10,7 +9,6 @@ from datasets import load_dataset
 
 
 logger = logging.getLogger(__name__)
-
 
 def create_prompt(train_dataset, input_text: str, n_shot=5) -> str:
     shots = train_dataset.select(random.sample(range(len(train_dataset)), n_shot))
@@ -76,6 +74,7 @@ def main():
     for idx, example in enumerate(test_dataset):
         result = text_generator(
             example["prompt"],
+            return_full_text=False,
             max_new_tokens=args.max_new_tokens,
             do_sample=args.do_sample,
             top_p=args.top_p,
@@ -83,9 +82,8 @@ def main():
             temperature=args.temperature,
             num_beams=args.num_beams,
         )
-        generated_text = result[0]["generated_text"][len(example["prompt"]) :]
-        generated_text = generated_text[: len(example["input"])]
-        generated_text = generated_text.replace("<end_of_turn>", "")
+        generated_text = result[0]["generated_text"]
+        generated_text = generated_text.split("user")[0]
         generated_text = generated_text.replace("\n", "")
         results.append(generated_text)
 
@@ -94,7 +92,7 @@ def main():
         logging.info(f"Output : {generated_text}\n")
 
     logging.info(f"Saving results to {args.submission_path} ...")
-    submission = pd.read_csv("./data/sample_submission.csv", encoding="utf-8-sig")
+    submission = pd.read_csv(args.test_path, encoding="utf-8-sig")
     submission["output"] = results
     submission.to_csv(args.submission_path, index=False, encoding="utf-8-sig")
 
