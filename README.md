@@ -1,5 +1,5 @@
 # dacon-korean-review-deobfuscation
-<img width="1189" alt="Image" src="https://github.com/user-attachments/assets/95cac8f8-7118-47c5-aee2-cc031846ce31" />
+<img width="1194" alt="Image" src="https://github.com/user-attachments/assets/f6552650-d7b1-423d-8c3b-1c54308c5763" />
 
 ## Results
 |Name|Type|Performance|Rank|
@@ -7,20 +7,12 @@
 |**[난독화된 한글 리뷰 복원 AI 경진대회](https://dacon.io/competitions/official/236446/overview/description)**|NLP, LLM|||
 
 ## Environment
+
 ```bash
 conda create -n dacon python=3.10
 conda activate dacon
 pip install -r requirements.txt
 pip install flash-attn --no-build-isolation
-```
-
-## Data Augmentation
-```bash
-python augment.py \
-    --input_file ./data/train.csv \
-    --output_file ./data/train_augmented.csv \
-    --k 5 \
-    --error_prob 0.4
 ```
 
 ## Supervised Fine-tuning (SFT)
@@ -35,10 +27,10 @@ sft.py \
 --model_name_or_path rtzr/ko-gemma-2-9b-it \
 --torch_dtype float16 \
 --max_seq_length 1024 \
---train_data ../data/train_augmented.csv \
+--train_data ../data/train.csv \
 --learning_rate 3e-4 \
 --num_train_epochs 5 \
---per_device_train_batch_size 8 \
+--per_device_train_batch_size 1 \
 --gradient_accumulation_steps 8 \
 --logging_steps 10 \
 --save_strategy epoch \
@@ -49,19 +41,33 @@ sft.py \
 --deepspeed ../stage1.json \
 --fp16 \
 --cache_dir ./LMs \
---token \
+--token .. \
 --report_to wandb \
---run_name rtzr-gemma-${CURRENT_TIME}
+--run_name rtzr-gemma-${CURRENT_TIME} \
 ```
 
 ## Inference
 ```bash
-CURRENT_TIME=$(date "+%Y-%m-%d_%H-%M-%S")
+cd ./inference
 
-python inference.py \
-    --model_name_or_path whybe-choi/ko-gemma-2-9b-it-5shot-dacon \
-    --train_path ./data/train.csv \
-    --test_path ./data/test.csv \
-    --submission_path ./submissions/submission_${CURRENT_TIME}.csv \
-    --do_sample False
+python inference_vllm.py \
+    --model_name_or_path ojoo/ko-gemma-2-9b-it-deobfuscation \
+    --train_path ../data/train.csv \
+    --test_path ../data/test.csv \
+    --submission_path ../submissions/submission_total.csv \
+    --n_shot 4 \
+    --num_beams 1 \
+    --max_new_tokens 1024
+```
+```bash
+cd ./inference
+
+python inference_vllm.py \
+    --model_name_or_path whybe-choi/ko-gemma-2-9b-it-sft-dacon \
+    --train_path ../data/train.csv \
+    --test_path ../data/test_sentences.csv \
+    --submission_path ../submissions/submission_sentences.csv \
+    --n_shot 5 \
+    --num_beams 5 \
+    --max_new_tokens 1024
 ```
