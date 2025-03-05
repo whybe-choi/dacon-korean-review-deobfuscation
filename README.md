@@ -1,19 +1,21 @@
 # dacon-korean-review-deobfuscation
-<img width="1194" alt="Image" src="https://github.com/user-attachments/assets/f6552650-d7b1-423d-8c3b-1c54308c5763" />
+<img width="1189" alt="Image" src="https://github.com/user-attachments/assets/95cac8f8-7118-47c5-aee2-cc031846ce31" />
 
 ## Results
 |Name|Type|Performance|Rank|
 |---|---|---|---|
-|**[난독화된 한글 리뷰 복원 AI 경진대회](https://dacon.io/competitions/official/236446/overview/description)**|NLP, LLM|||
+|**[난독화된 한글 리뷰 복원 AI 경진대회](https://dacon.io/competitions/official/236446/overview/description)**|NLP, LLM|🥈 Top2%|7/291|
 
 ## Environment
-
 ```bash
 conda create -n dacon python=3.10
 conda activate dacon
 pip install -r requirements.txt
 pip install flash-attn --no-build-isolation
 ```
+
+## Methodology
+For a detailed explanation of the methodology, please refer to our [presentation slides](./slides/[Private%207위]%20Solution%20PPT.pdf).
 
 ## Supervised Fine-tuning (SFT)
 ```bash
@@ -71,3 +73,8 @@ python inference_vllm.py \
     --num_beams 5 \
     --max_new_tokens 1024
 ```
+## Members
+|정영주|최용빈|
+| :-: | :-: |
+| <a href="https://github.com/ojoo-J" target="_blank"><img src='https://avatars.githubusercontent.com/u/63037270?v=4' height=130 width=130></img> | <a href="https://github.com/whybe-choi" target="_blank"><img src='https://avatars.githubusercontent.com/u/64704608?v=4' height=130 width=130></img> |
+| <a href="https://github.com/ojoo-J" target="_blank"><img src="https://img.shields.io/badge/GitHub-black.svg?&style=round&logo=github"/></a> | <a href="https://github.com/whybe-choi" target="_blank"><img src="https://img.shields.io/badge/GitHub-black.svg?&style=round&logo=github"/></a> |
